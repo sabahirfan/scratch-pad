@@ -1,0 +1,107 @@
+{
+  "node": {
+    "fields": [
+      {
+        "name": "secTypCd",
+        "field": "security.secTypCd"
+      },
+      {
+        "name": "localCurrency",
+        "field": "security.localCurrency"
+      }
+    ],
+    "children": [
+      {
+        "values": [
+          {
+            "name": "secTypCd",
+            "value": "Sabah"
+          },
+          {
+            "name": "localCurrency",
+            "value": "GBP"
+          }
+        ],
+        "template": "Sabah with GBP"
+      },
+      {
+        "values": [
+          {
+            "name": "secTypCd",
+            "value": "Sabah"
+          },
+          {
+            "name": "localCurrency",
+            "value": "USD"
+          }
+        ],
+        "template": "Sabah with USD"
+      },
+      {
+        "values": [
+          {
+            "name": "secTypCd",
+            "value": "Manjit"
+          },
+          {
+            "name": "localCurrency",
+            "value": "GBP"
+          }
+        ],
+        "node": {
+          "fields": [
+            {
+              "name": "index",
+              "field": "security.index"
+            },
+            {
+              "name": "paymentFreq",
+              "field": "security.paymentFreq"
+            }
+          ],
+          "children": [
+            {
+              "values": [
+                {
+                  "name": "index",
+                  "value": "Manjit"
+                },
+                {
+                  "name": "paymentFreq",
+                  "value": "Monthly"
+                }
+              ],
+              "template": "Monthly-template"
+            },
+            {
+              "values": [
+                {
+                  "name": "index",
+                  "value": "Manjit"
+                },
+                {
+                  "name": "paymentFreq",
+                  "value": "Weekly"
+                }
+              ],
+              "template": "Weekly-template"
+            },
+            {
+              "values": [
+                {
+                  "name": "index",
+                  "value": "*"
+                },
+                {
+                  "name": "paymentFreq",
+                  "value": "*"
+                }
+              ],
+              "template": "wild-card-template"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
