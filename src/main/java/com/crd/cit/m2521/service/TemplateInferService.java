@@ -21,16 +21,16 @@ public class TemplateInferService {
         this.documentInfer = loadMatchingConfig();
     }
 
-    public DocumentInfer loadMatchingConfig() {
-        try {
-            return objectMapper.readValue(
-                    getClass().getClassLoader().getResourceAsStream("matching-config.json"),
-                    DocumentInfer.class
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load matching config", e);
+        public DocumentInfer loadMatchingConfig() {
+            try {
+                return objectMapper.readValue(
+                        getClass().getClassLoader().getResourceAsStream("matching-config.json"),
+                        DocumentInfer.class
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load matching config", e);
+            }
         }
-    }
 
     public String processDocumentInference(JsonNode crimsJsonNode) {
         // Populate crimsValues in the documentInfer object
