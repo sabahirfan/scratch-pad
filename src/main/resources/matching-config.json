@@ -3,11 +3,13 @@
     "fields": [
       {
         "name": "secTypCd",
-        "field": "security.secTypCd"
+        "field": "security.secTypCd",
+        "type": "STRING"
       },
       {
         "name": "localCurrency",
-        "field": "security.localCurrency"
+        "field": "security.localCurrency",
+        "type": "ARRAY"
       }
     ],
     "children": [
@@ -15,48 +17,24 @@
         "values": [
           {
             "name": "secTypCd",
-            "value": "Sabah"
+            "value": ["Manjit"]
           },
           {
             "name": "localCurrency",
-            "value": "GBP"
-          }
-        ],
-        "template": "Sabah with GBP"
-      },
-      {
-        "values": [
-          {
-            "name": "secTypCd",
-            "value": "Sabah"
-          },
-          {
-            "name": "localCurrency",
-            "value": "USD"
-          }
-        ],
-        "template": "Sabah with USD"
-      },
-      {
-        "values": [
-          {
-            "name": "secTypCd",
-            "value": "Manjit"
-          },
-          {
-            "name": "localCurrency",
-            "value": "GBP"
+            "value": ["GBP", "EUR"]
           }
         ],
         "node": {
           "fields": [
             {
               "name": "index",
-              "field": "security.index"
+              "field": "security.index",
+              "type": "STRING"
             },
             {
               "name": "paymentFreq",
-              "field": "security.paymentFreq"
+              "field": "security.paymentFreq",
+              "type": "REGEX"
             }
           ],
           "children": [
@@ -64,43 +42,56 @@
               "values": [
                 {
                   "name": "index",
-                  "value": "Manjit"
+                  "value": ["Manjit"]
                 },
                 {
                   "name": "paymentFreq",
-                  "value": "Monthly"
+                  "value": ["Weekly\\d+"]
                 }
               ],
-              "template": "Monthly-template"
+              "template": "Weekly-numeric-template"
             },
             {
               "values": [
                 {
                   "name": "index",
-                  "value": "Manjit"
+                  "value": ["Manjit"]
                 },
                 {
                   "name": "paymentFreq",
-                  "value": "Weekly"
+                  "value": ["Weekly"]
                 }
               ],
-              "template": "Weekly-template"
+              "template": "Weekly-simple-template"
             },
             {
               "values": [
                 {
                   "name": "index",
-                  "value": "*"
+                  "value": ["*"]
                 },
                 {
                   "name": "paymentFreq",
-                  "value": "*"
+                  "value": ["*"]
                 }
               ],
               "template": "wild-card-template"
             }
           ]
         }
+      },
+      {
+        "values": [
+          {
+            "name": "secTypCd",
+            "value": ["^SAB.*"]
+          },
+          {
+            "name": "localCurrency",
+            "value": ["USD"]
+          }
+        ],
+        "template": "USD-template"
       }
     ]
   }

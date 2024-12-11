@@ -1,14 +1,22 @@
 package com.crd.cit.m2521.service;
 
-import com.crd.cit.m2521.model.*;
+import com.crd.cit.m2521.model.DocumentInfer;
+import com.crd.cit.m2521.model.Field;
+import com.crd.cit.m2521.model.FieldType;
+import com.crd.cit.m2521.model.NodeCondition;
+import com.crd.cit.m2521.model.Value;
+import com.crd.cit.m2521.model.ValuesNodes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @Slf4j
 @Service
@@ -21,16 +29,16 @@ public class TemplateInferService {
         this.documentInfer = loadMatchingConfig();
     }
 
-        public DocumentInfer loadMatchingConfig() {
-            try {
-                return objectMapper.readValue(
-                        getClass().getClassLoader().getResourceAsStream("matching-config.json"),
-                        DocumentInfer.class
-                );
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load matching config", e);
-            }
+    public DocumentInfer loadMatchingConfig() {
+        try {
+            return objectMapper.readValue(
+                    getClass().getClassLoader().getResourceAsStream("matching-config.json"),
+                    DocumentInfer.class
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load matching config", e);
         }
+    }
 
     public String processDocumentInference(JsonNode crimsJsonNode) {
         // Populate crimsValues in the documentInfer object
@@ -41,18 +49,88 @@ public class TemplateInferService {
     }
 
     private void populateCrimsValues(NodeCondition nodeCondition, JsonNode crimsJsonNode) {
-        // Populate crimsValues for each field in the node
         for (Field field : nodeCondition.getFields()) {
             String[] pathParts = field.getField().split("\\.");
             JsonNode valueNode = crimsJsonNode;
-
             for (String part : pathParts) {
                 valueNode = valueNode.path(part);
             }
 
-            field.setCrimsValue(valueNode.asText());
+            // Handle different field types for population
+            if (valueNode.isArray() && field.getType() == FieldType.ARRAY) {
+                // Join array values with comma for array type fields
+                StringBuilder arrayValue = new StringBuilder();
+                valueNode.forEach(node -> {
+                    if (arrayValue.length() > 0) {
+                        arrayValue.append(",");
+                    }
+                    arrayValue.append(node.asText());
+                });
+                field.setCrimsValue(arrayValue.toString());
+            } else {
+                field.setCrimsValue(valueNode.asText());
+            }
         }
     }
+
+    private boolean matchesAllValues(List<Field> fields, List<Value> values) {
+        if (fields.size() != values.size()) {
+            return false;
+        }
+
+        return fields.stream().allMatch(field ->
+                values.stream().anyMatch(value ->
+                        field.getName().equals(value.getName()) && matchValue(field, value)
+                )
+        );
+    }
+
+    private boolean matchValue(Field field, Value value) {
+        String crimsValue = field.getCrimsValue();
+        List<String> targetValues = value.getValue();
+
+        // Handle wildcard match first
+        if (targetValues.contains("*")) {
+            return true;
+        }
+
+        // Handle different field types
+        switch (field.getType()) {
+            case ARRAY:
+                return matchArrayValue(crimsValue, targetValues);
+            case REGEX:
+                return matchRegexValue(crimsValue, targetValues);
+            case STRING:
+            default:
+                return targetValues.contains(crimsValue);
+        }
+    }
+
+    private boolean matchArrayValue(String crimsValue, List<String> targetValues) {
+        if (crimsValue == null || crimsValue.isEmpty()) {
+            return false;
+        }
+
+        List<String> crimsValues = Arrays.asList(crimsValue.split(","));
+        // Check if any of the target values are present in the CRIMS array
+        return targetValues.stream().anyMatch(crimsValues::contains);
+    }
+
+    private boolean matchRegexValue(String crimsValue, List<String> targetValues) {
+        if (crimsValue == null) {
+            return false;
+        }
+
+        return targetValues.stream().anyMatch(pattern -> {
+            try {
+                return Pattern.compile(pattern).matcher(crimsValue).matches();
+            } catch (PatternSyntaxException e) {
+                log.error("Invalid regex pattern: {}", pattern, e);
+                return false;
+            }
+        });
+    }
+
 
     private String findTemplateRecursively(NodeCondition nodeCondition, JsonNode crimsJsonNode) {
         // Check direct children first
@@ -87,17 +165,6 @@ public class TemplateInferService {
         }
 
         return null;
-    }
-
-    private boolean matchesAllValues(List<Field> fields, List<Value> values) {
-        if (fields.size() != values.size()) return false;
-
-        return fields.stream().allMatch(field ->
-                values.stream().anyMatch(value ->
-                        field.getName().equals(value.getName()) &&
-                                value.getValue().contains(field.getCrimsValue())
-                )
-        );
     }
 
     private Optional<ValuesNodes> findSingleWildcardMatch(NodeCondition nodeCondition) {

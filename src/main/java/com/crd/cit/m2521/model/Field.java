@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
+@SuppressWarnings("PMD")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Field {
+
     private String name;
     private String field;
-    private String crimsValue; // this value will be populated from crims.json based on the field property of this class.
+    private String crimsValue;
+    private FieldType type = FieldType.STRING;  // Default to STRING
 }
